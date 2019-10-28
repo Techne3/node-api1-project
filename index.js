@@ -9,67 +9,89 @@ const server = express();
 //middleware need for POST and PUT to work
 server.use(express.json())
 
-//handles GET request to / on localhost:4000
-server.get(`/`, (req,res) => {
-    res.send(`hello api project`)
+//handles GET request to /users on localhost:4000
+server.get('/api/users', (req, res) => {
+    db.find()
+    .then(users => {
+        res.status(200).json(users)
+    })
+    .catch(error => {
+        res.status(500).json({ error: "No user information found." })
+        res.end(users);
+    })
 })
 
+
 //GET to /users that returns a list of data
-server.get(`/api/users`, (req,res)=> {
-    db.find()
-    .then(data => {
-        res.status(200).json(data)
+server.get('/api/users/:id', (req, res) => {
+    const id = req.params.id;
+
+    db.findById(id)
+    .then(users => {
+        if(!users.id){
+            res.status(404).json({ message: "The user with that ID doesn't exist." })
+        } else {
+            res.status(200).json(users)
+        }
     })
-    .catch(err => {
-        console.log('error', err)
-        res.status(500).json({error: `failed to get data from db`})
+    .catch(error => {
+        res.end()
+        res.status(500).json({ message: "The user information could not be retrieved."})
     })
 })
 
 //POST to /users
 server.post('/api/users', (req, res) => {
-    const information = req.body;
-  
-    console.log('hubs information', information);
-  
-    db.insert(information)
-      .then(info => {
-        res.status(201).json(info);
-      })
-      .catch(err => {
-        console.log('error', err);
-        res.status(500).json({ error: 'failed to insert the hub to the db' });
-      });
-  });
+    const user = req.body;
+    if(!user.bio || !user.name){
+        res.status(400).json({ errorMessage: "Need both bio and name." })
+        res.end()
+    } else {
+        db.insert(user)
+        .then(users => {
+            res.status(201).json(user)
+        })
+        .catch(error => {
+            res.status(500).json({ message: "error added to db" })
+        })
+    }
+})
 
   //Delete to /users/:id
   server.delete(`/api/users/:id`, (req, res)=> {
       const id = req.params.id
 
-      db.remove(id).then(count => {
-          res.status(200).json({message: `hubs with id ${id} deleted`})
-      })
-      .catch(err => {
-        console.log('error', err);
-        res.status(500).json({ error: 'failed to remove the hub to the db' });
-      });
+      if(!id){
+        res.status(404).json({ message: "The user with the specified ID does not exist." })
+    } else {
+        db.remove(id)
+        .then(user => {
+            res.status(200).json(user)
+        })
+        .catch(error => {
+            res.status(500).json({ error: "No user with that ID." })
+        })
+    }
   })
 
   //PUT request to /users/:id
 
-  server.put(`/api/users/:id`,(req,res) => {
-      const ids = req.params.id
-      const info = {}
+  server.put('/api/users/:id', (req, res) => {
+    const id = req.params.id;
+    const user = req.body;
 
-      db.update(ids,info).then(newCount => {
-          res.status(200).json({message: `hubs with id ${id} updated`})
-      })
-      .catch(err => {
-          console.log(`error`, err);
-          res.status(500).json({error: 'failed to update the hub on the db'})
-      })
-  })
-
+    if(!user.id){
+        res.status(404).json({ message: "The user with the specified ID does not exist." })
+    } else {
+        db.update(id, user)
+        .then(user => {
+            res.status(200).json(user)
+        })
+        .catch(error => {
+            res.status(500).json({ error: "No user with that ID." })
+        })
+    }
+})
 
 
 // listen for requests in a particular port on localhost
