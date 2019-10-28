@@ -65,11 +65,15 @@ server.delete('/api/users/:id', (req, res) => {
     db.remove(id)
     .then(user => {
         console.log(user, id)
-        if(!user){
-            res.status(404).json({ message: "The user with the specified ID does not exist." })
-        } else {
-            res.status(200).json({ message: `Item with id ${id} deleted`})
-        }
+
+        !user ? res.status(404).json({message:"the user with the specified ID does not exist"}) 
+        :res.status(200).json({message: `Item with id ${id} deleted`})
+
+        // if(!user){
+        //     res.status(404).json({ message: "The user with the specified ID does not exist." })
+        // } else {
+        //     res.status(200).json({ message: `Item with id ${id} deleted`})
+        // }
 
     })
     .catch(err => {
@@ -92,11 +96,14 @@ server.delete('/api/users/:id', (req, res) => {
     db.update(id, user)
     .then(user => {
         console.log(user)
-        if(!id){
-            res.status(404).json({ message: "The user with the specified ID does not exist." })
-        } else {
-            res.status(200).json(user)
-        }
+        !user ? res.status(404).json({ message: "The user with the specified ID does not exist." })
+        :  res.status(200).json(user)
+
+        // if(!id){
+        //     res.status(404).json({ message: "The user with the specified ID does not exist." })
+        // } else {
+        //     res.status(200).json(user)
+        // }
     })
     .catch(err => {
         console.log('error', err)
